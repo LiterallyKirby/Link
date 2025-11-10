@@ -1,0 +1,705 @@
+:root {
+	--bg-1: #001400;
+	--bg-2: #001a00;
+	--glass-accent: rgba(80, 255, 145, 0.12);
+	--glass-border: rgba(120, 255, 170, 0.16);
+	--text-weak: #c8ffd6;
+	--text-strong: #bfffd0;
+	--accent: #7eff9e;
+	--accent-bright: #b7ffd4;
+	--card-radius: 18px;
+	--container-width: 980px;
+
+	/* Enhanced Vista-like extras */
+	--vista-glow: rgba(100, 255, 150, 0.12);
+	--chrome-edge: rgba(255, 255, 255, 0.06);
+	--taskbar-bg: rgba(0, 6, 0, 0.55);
+	--vista-blue: #0078d7;
+	--vista-glass: rgba(255, 255, 255, 0.08);
+	--vista-highlight: rgba(255, 255, 255, 0.15);
+	--vista-shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* layout */
+html,
+body {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: "Segoe UI", "Frutiger", "Inter", Roboto, Helvetica, Arial, sans-serif;
+	background:
+		radial-gradient(1200px 600px at 10% 10%, rgba(6, 60, 20, 0.55), transparent 10%),
+		radial-gradient(1000px 500px at 90% 90%, rgba(0, 20, 10, 0.45), transparent 12%),
+		linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 70%);
+	color: var(--text-weak);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 48px 20px 120px;
+	/* room for taskbar */
+	overflow-x: hidden;
+	min-height: 100vh;
+}
+
+/* Vista-style Aero shimmer effect */
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	background:
+		linear-gradient(120deg, rgba(255, 255, 255, 0.02), transparent 15%, rgba(255, 255, 255, 0.01) 30%),
+		linear-gradient(250deg, rgba(0, 255, 140, 0.02), transparent 30%),
+		radial-gradient(circle at 20% 80%, rgba(120, 255, 170, 0.03), transparent 25%),
+		radial-gradient(circle at 80% 20%, rgba(100, 220, 150, 0.02), transparent 25%);
+	mix-blend-mode: screen;
+	animation: drift 14s linear infinite;
+}
+
+@keyframes drift {
+	from {
+		transform: translateX(-8%);
+	}
+
+	to {
+		transform: translateX(8%);
+	}
+}
+
+/* wrapper grid */
+.wrap {
+	width: min(var(--container-width), 96%);
+	display: grid;
+	grid-template-columns: 1fr 360px;
+	gap: 28px;
+	align-items: start;
+}
+
+/* Vista-style header with glow */
+header.site-title {
+	grid-column: 1 / span 2;
+	display: flex;
+	gap: 18px;
+	align-items: center;
+	margin-bottom: 6px;
+}
+
+/* Enhanced Vista-style logo with glass effect */
+.logo {
+	width: 64px;
+	height: 64px;
+	border-radius: 14px;
+	display: grid;
+	place-items: center;
+	background:
+		linear-gradient(135deg,
+			rgba(255, 255, 255, 0.12) 0%,
+			rgba(255, 255, 255, 0.04) 50%,
+			rgba(0, 0, 0, 0.05) 100%);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow:
+		0 8px 36px rgba(0, 0, 0, 0.65),
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+	position: relative;
+	overflow: hidden;
+}
+
+.logo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+	display: block;
+}
+
+.logo::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent 40%);
+	mix-blend-mode: overlay;
+	pointer-events: none;
+}
+
+.logo svg {
+	width: 44px;
+	height: 44px;
+	filter: drop-shadow(0 6px 12px rgba(0, 255, 130, 0.06));
+}
+
+h1 {
+	margin: 0;
+	font-size: 1.6rem;
+	letter-spacing: -0.6px;
+	color: var(--text-strong);
+	font-weight: 600;
+	text-shadow: 0 8px 36px rgba(0, 255, 130, 0.06);
+}
+
+p.lead {
+	margin: 4px 0 0 0;
+	font-size: 0.92rem;
+	color: #bfeed0;
+	opacity: 0.95;
+}
+
+/* ===== Enhanced Windows Vista-style Window/Card ===== */
+.card {
+	position: relative;
+	--inner-pad: 18px;
+	background:
+		linear-gradient(180deg,
+			rgba(255, 255, 255, 0.08) 0%,
+			rgba(255, 255, 255, 0.02) 40%,
+			rgba(10, 30, 10, 0.42) 100%);
+	border-radius: calc(var(--card-radius) + 2px);
+	padding: 0;
+	/* titlebar + content padding handled separately */
+	backdrop-filter: blur(16px) saturate(1.2);
+	-webkit-backdrop-filter: blur(16px) saturate(1.2);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow:
+		0 26px 80px rgba(0, 0, 0, 0.75),
+		0 8px 30px rgba(0, 255, 140, 0.03),
+		inset 0 1px 0 var(--chrome-edge),
+		0 0 0 1px rgba(0, 0, 0, 0.3);
+	/* Vista-style inner border */
+	overflow: hidden;
+}
+
+/* Enhanced Vista titlebar with glossy chrome */
+.card .titlebar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 14px;
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.15) 0%,
+			rgba(255, 255, 255, 0.05) 50%,
+			rgba(0, 0, 0, 0.05) 100%);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	backdrop-filter: blur(4px);
+	position: relative;
+}
+
+.card .titlebar::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(90deg,
+			transparent,
+			rgba(255, 255, 255, 0.2),
+			transparent);
+}
+
+.card .titlebar .title {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	color: var(--text-strong);
+	font-weight: 600;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced Vista-style window controls */
+.window-controls {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.window-controls button {
+	width: 38px;
+	height: 26px;
+	border-radius: 5px;
+	border: none;
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.1) 0%,
+			rgba(255, 255, 255, 0.02) 50%,
+			rgba(0, 0, 0, 0.05) 100%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 1px 2px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+	color: rgba(255, 255, 255, 0.7);
+	transition: all .12s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.window-controls button::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 50%;
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.2),
+			transparent);
+	border-radius: 5px 5px 0 0;
+}
+
+.window-controls button:hover {
+	transform: translateY(-1px);
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.15) 0%,
+			rgba(255, 255, 255, 0.05) 50%,
+			rgba(0, 0, 0, 0.08) 100%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.1),
+		0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.window-controls .close {
+	background: linear-gradient(180deg, #ff6b6b, #ff3b3b);
+	color: white;
+}
+
+.window-controls .close::before {
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.3),
+			transparent);
+}
+
+.window-controls .min {
+	width: 34px;
+	height: 22px;
+}
+
+.window-controls svg {
+	width: 12px;
+	height: 12px;
+	position: relative;
+	z-index: 1;
+}
+
+/* card content area */
+.card .content-inner {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+/* Enhanced Vista glass reflection effect */
+.card::before {
+	content: "";
+	position: absolute;
+	left: -30%;
+	top: -20%;
+	width: 160%;
+	height: 60%;
+	background: linear-gradient(90deg,
+			rgba(255, 255, 255, 0.06),
+			rgba(255, 255, 255, 0.18),
+			rgba(255, 255, 255, 0.06));
+	transform: rotate(-12deg) translateY(-50%);
+	filter: blur(28px);
+	opacity: 0.06;
+	pointer-events: none;
+	transition: transform .6s ease, opacity .4s ease;
+	mix-blend-mode: screen;
+}
+
+.card:hover::before {
+	transform: rotate(-12deg) translateY(0%);
+	opacity: 0.14;
+}
+
+/* inner content styles */
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.post-title {
+	font-size: 1.12rem;
+	margin: 0 0 6px 0;
+	color: var(--text-strong);
+	font-weight: 700;
+	letter-spacing: -0.2px;
+}
+
+.post-body {
+	margin: 0;
+	color: var(--text-weak);
+	line-height: 1.6;
+	font-size: 1rem;
+	opacity: 0.98;
+}
+
+/* Enhanced Vista-style CTA button */
+.cta {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 12px;
+	padding: 10px 16px;
+	border-radius: 999px;
+	font-weight: 600;
+	color: #02240e;
+	background: linear-gradient(180deg, var(--accent), var(--accent-bright));
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	box-shadow:
+		0 10px 36px rgba(34, 170, 90, 0.14),
+		0 1px 0 rgba(255, 255, 255, 0.1) inset,
+		0 -1px 0 rgba(0, 0, 0, 0.1) inset;
+	text-decoration: none;
+	transition: all .18s ease;
+	position: relative;
+	overflow: hidden;
+}
+
+.cta::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 50%;
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.2),
+			transparent);
+	border-radius: 999px 999px 0 0;
+}
+
+.cta:hover {
+	transform: translateY(-4px);
+	box-shadow:
+		0 20px 64px rgba(34, 170, 90, 0.22),
+		0 1px 0 rgba(255, 255, 255, 0.1) inset,
+		0 -1px 0 rgba(0, 0, 0, 0.1) inset;
+}
+
+.cta span {
+	position: relative;
+	z-index: 1;
+}
+
+/* Vista-style sidebar panels */
+.meta {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.panel {
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.05) 0%,
+			rgba(255, 255, 255, 0.02) 50%,
+			rgba(0, 0, 0, 0.03) 100%);
+	border-radius: 14px;
+	padding: 14px;
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	box-shadow:
+		0 10px 30px rgba(0, 0, 0, 0.5),
+		inset 0 1px 0 rgba(255, 255, 255, 0.03);
+	color: var(--text-weak);
+	backdrop-filter: blur(8px);
+}
+
+.meta h3 {
+	margin: 0 0 8px 0;
+	font-size: 0.95rem;
+	color: var(--text-strong);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.divider {
+	height: 1px;
+	background: linear-gradient(90deg,
+			transparent,
+			rgba(120, 255, 170, 0.12),
+			transparent);
+	margin: 8px 0;
+	border-radius: 2px;
+}
+
+.quicklink {
+	color: var(--accent-bright);
+	text-decoration: none;
+	transition: all 0.15s ease;
+}
+
+.quicklink:hover {
+	text-shadow: 0 0 8px rgba(126, 255, 158, 0.5);
+}
+
+/* Vista-style mini post preview */
+.mini-post {
+	margin-top: 12px;
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.mini-post .dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--accent);
+	box-shadow: 0 6px 18px rgba(0, 255, 140, 0.06);
+	position: relative;
+	margin-top: 6px;
+}
+
+.mini-post .dot::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 50%;
+	background: radial-gradient(circle at 30% 30%,
+			rgba(255, 255, 255, 0.5),
+			transparent 70%);
+}
+
+.post-mini-title {
+	display: block;
+	color: var(--text-strong);
+	font-weight: 600;
+}
+
+.post-mini-desc {
+	color: #9fd9b0;
+	font-size: 0.85rem;
+}
+
+/* ===== Enhanced Vista Taskbar ===== */
+footer {
+	position: fixed;
+	left: 12px;
+	right: 12px;
+	bottom: 12px;
+	height: 56px;
+	background: linear-gradient(180deg,
+			rgba(255, 255, 255, 0.08) 0%,
+			rgba(255, 255, 255, 0.02) 50%,
+			rgba(0, 6, 0, 0.55) 100%);
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 8px 14px;
+	box-shadow:
+		0 20px 60px rgba(0, 0, 0, 0.6),
+		inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(12px);
+	color: var(--text-weak);
+}
+
+
+/* Improved Start Orb — drop this in instead of your old .start-orb */
+.start-orb {
+	--size: 42px;
+	width: var(--size);
+	height: var(--size);
+	border-radius: 999px;
+	display: grid;
+	place-items: center;
+	position: relative;
+	overflow: visible;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	background:
+		radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.05) 40%, transparent 60%),
+		linear-gradient(180deg, var(--accent), var(--accent-bright));
+	box-shadow:
+		0 10px 30px rgba(0, 0, 0, 0.65),
+		0 2px 6px rgba(0, 0, 0, 0.45) inset,
+		0 0 28px rgba(0, 255, 140, 0.06);
+	cursor: pointer;
+	transition: transform .16s ease, box-shadow .16s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* soft top gloss */
+.start-orb::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	top: -8%;
+	left: -8%;
+	width: 116%;
+	height: 60%;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.06));
+	border-radius: 999px 999px 60% 60%;
+	mix-blend-mode: overlay;
+	pointer-events: none;
+	filter: blur(0.6px);
+	transform-origin: center;
+	opacity: 0.95;
+}
+
+/* tiny rotating color core — gives that Vista "orb" shimmer */
+.start-orb::after {
+	content: "";
+	position: absolute;
+	width: 60%;
+	height: 60%;
+	border-radius: 999px;
+	background: conic-gradient(from 200deg at 50% 50%,
+			rgba(255, 255, 255, 0.85) 0deg,
+			rgba(200, 255, 200, 0.85) 40deg,
+			rgba(140, 255, 170, 0.9) 90deg,
+			rgba(255, 255, 255, 0.6) 140deg,
+			rgba(200, 255, 220, 0.7) 220deg,
+			rgba(255, 255, 255, 0.8) 320deg);
+	filter: blur(8px) saturate(1.1);
+	opacity: 0.55;
+	transform: translateZ(0) scale(0.95);
+	transition: opacity .25s ease, transform .25s ease;
+	pointer-events: none;
+	box-shadow: 0 6px 22px rgba(0, 255, 140, 0.12);
+	mix-blend-mode: screen;
+	/* animation added below */
+}
+
+/* hover / active */
+.start-orb:hover {
+	transform: translateY(-4px) scale(1.03);
+	box-shadow:
+		0 18px 44px rgba(0, 0, 0, 0.72),
+		0 0 40px rgba(0, 255, 140, 0.12),
+		0 2px 8px rgba(255, 255, 255, 0.04) inset;
+}
+
+.start-orb:active {
+	transform: translateY(-1px) scale(0.995);
+}
+
+/* accessible focus */
+.start-orb:focus {
+	outline: none;
+	box-shadow:
+		0 18px 44px rgba(0, 0, 0, 0.72),
+		0 0 48px rgba(0, 255, 140, 0.22);
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* tiny decorative center icon (optional) — looks like a spark */
+.start-orb>svg {
+	width: 56%;
+	height: 56%;
+	pointer-events: none;
+	mix-blend-mode: multiply;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+/* rotating core animation */
+@keyframes orb-spin {
+	from {
+		transform: rotate(0deg) scale(0.95);
+	}
+
+	to {
+		transform: rotate(360deg) scale(0.95);
+	}
+}
+
+.start-orb::after {
+	animation: orb-spin 8s linear infinite;
+}
+
+/* reduce motion respect */
+@media (prefers-reduced-motion: reduce) {
+
+	.start-orb,
+	.start-orb::after {
+		transition: none;
+		animation: none;
+		transform: none;
+	}
+
+	.start-orb:hover {
+		transform: translateY(-2px);
+	}
+}
+
+
+/* taskbar label/content */
+.taskbar-label {
+	color: var(--text-strong);
+	font-weight: 600;
+	opacity: 0.95;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Vista-style notification area (simulated) */
+footer::after {
+	content: "12:34 PM";
+	margin-left: auto;
+	font-size: 0.85rem;
+	opacity: 0.8;
+	padding: 4px 8px;
+	background: rgba(0, 0, 0, 0.1);
+	border-radius: 4px;
+}
+
+/* responsive */
+@media (max-width: 920px) {
+	.wrap {
+		grid-template-columns: 1fr;
+	}
+
+	.meta {
+		order: 2;
+	}
+
+	header.site-title {
+		grid-column: 1;
+		gap: 12px;
+		margin-bottom: 10px;
+	}
+
+	footer {
+		left: 8px;
+		right: 8px;
+		bottom: 8px;
+	}
+}
+
+/* Vista-style scrollbar (Webkit browsers) */
+::-webkit-scrollbar {
+	width: 16px;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(0, 10, 0, 0.2);
+	border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg,
+			rgba(126, 255, 158, 0.4),
+			rgba(100, 220, 140, 0.3));
+	border-radius: 8px;
+	border: 2px solid rgba(0, 10, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: linear-gradient(180deg,
+			rgba(126, 255, 158, 0.6),
+			rgba(100, 220, 140, 0.5));
+}
+
+/* Vista-style selection */
+::selection {
+	background: rgba(126, 255, 158, 0.3);
+	color: var(--text-strong);
+}
