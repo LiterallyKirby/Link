@@ -4,110 +4,137 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Link — Something Cool</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/main.css">
 </head>
 
 <body>
   <div class="wrap">
     <header class="site-title">
-      <div class="logo" aria-hidden="true">
-        <img src="https://i.redd.it/link-twilight-princess-version-v0-8yonopyzy6fc1.jpg?width=526&format=pjpg&auto=webp&s=ccdcf9d64d8b56ccafdfc557c764bb14a06ae70b" alt="Profile picture">
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="6" y="6" width="52" height="52" rx="10" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" fill="none"/>
-          <path d="M18 38 L28 24 L38 44" stroke="rgba(10,30,10,0.95)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+      <div class="logo">
+        <img src="https://i.redd.it/link-twilight-princess-version-v0-8yonopyzy6fc1.jpg?width=526&format=pjpg&auto=webp&s=ccdcf9d64d8b56ccafdfc557c764bb14a06ae70b" alt="Link">
       </div>
-
       <div>
         <h1>Link</h1>
         <p class="lead">Because I was bored.</p>
       </div>
     </header>
 
-    <!-- Vista-style card with titlebar -->
-    <main class="card" role="main">
-      <div class="titlebar">
-        <div class="title">
-          <svg width="18" height="18" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-            <rect x="6" y="6" width="52" height="52" rx="10" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
-          </svg>
-          <span>Link</span>
-        </div>
+    <div class="layout">
+      <div class="main-col">
+        <main class="card" role="main">
+          <div class="titlebar">
+            <div class="title">
+              <span>📝</span>
+              <span>Blog Posts</span>
+            </div>
+            <div class="window-controls">
+              <button class="min" title="Minimize">–</button>
+              <button class="max" title="Maximize">□</button>
+              <button class="close" title="Close">×</button>
+            </div>
+          </div>
 
-        <div class="window-controls" aria-hidden="true">
-          <button class="min" title="Minimize">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="11.5" width="16" height="1.5" rx="0.75" fill="currentColor"/>
-            </svg>
-          </button>
-          <button class="max" title="Maximize">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="4.5" y="5.5" width="15" height="13" rx="1.2" stroke="currentColor" stroke-width="1.2"/>
-            </svg>
-          </button>
-          <button class="close" title="Close">×</button>
-        </div>
+          <div class="content-inner">
+            <div id="posts-container">
+              <p style="color: #66cc88;">Loading posts...</p>
+            </div>
+          </div>
+        </main>
       </div>
 
-    
-<div class="content-inner">
-  <article class="content">
-    <h2 class="post-title">First Post — So... Why This?</h2>
-    <p class="post-body">
-      I’ve had a bunch of half-finished projects sitting around forever, and instead of letting them rot in random folders, I figured I’d put them somewhere semi-presentable. 
-      This blog’s basically just a dumping ground for whatever I’m building, breaking, or over-engineering at 3 AM.
-    </p>
+      <div class="side-col">
+        <aside class="meta">
+          <div class="panel">
+            <h3>About</h3>
+            <small>Bored programmer who mostly does things out of spite. Currently working on 4 projects at the same time.</small>
+          </div>
 
-    <p class="post-body">
-      Expect a mix of code snippets, screenshots, and the occasional rant about why some library refuses to compile.
-      I might also drop thoughts on design or random tech stuff if I feel like it.
-    </p>
+          <div class="panel">
+            <h3>Quick links</h3>
+            <small>
+              <a href="index.html" class="quicklink">Home</a><br>
+              <a href="projects.html" class="quicklink">Projects</a><br>
+              <a href="admin.html" class="quicklink">Admin</a>
+            </small>
+          </div>
 
-    <p class="post-body">
-      Anyway, if you somehow found this — hi. You’re early. There’s nothing here yet.
-    </p>
-
-    <a class="cta" href="blog.html">
-      <span>Read full post</span>
-      <span class="arrow">→</span>
-    </a>
-
-    <section class="mini-post">
-      <div class="dot"></div>
-      <div>
-        <strong class="post-mini-title">Currently</strong>
-        <small class="post-mini-desc">Trying to decide if I should make this static or dynamic. Probably static... until I regret it.</small>
+          <div class="panel">
+            <h3>Stats</h3>
+            <small>
+              <strong>Posts:</strong> <span id="post-count">0</span><br>
+              <strong>Since:</strong> 2025<br>
+              <strong>Status:</strong> <span style="color: #00ff66;">● Online</span>
+            </small>
+          </div>
+        </aside>
       </div>
-    </section>
-  </article>
-</div>
+    </div>
 
-    </main>
-
-    <aside class="meta">
-      <div class="panel">
-        <h3>About</h3>
-        <div class="divider"></div>
-        <small>Bored programmer who mostly does things out of spite. Currently working on 4 projects at the same time.</small>
-      </div>
-
-      <div class="panel">
-        <h3>Quick links</h3>
-        <div class="divider"></div>
-        <small>
-          <a href="#" class="quicklink">Stuff</a> · 
-          <a href="projects.html" class="quicklink">Projects</a>
-        </small>
-      </div>
-    </aside>
-
-    <!-- Vista-style taskbar footer -->
     <footer>
       <button class="start-orb" aria-label="Start"></button>
       <div class="taskbar-label">Hey! Listen!</div>
     </footer>
   </div>
+
+  <script>
+    async function loadPosts() {
+      try {
+        const response = await fetch('/api/posts');
+        const posts = await response.json();
+        
+        const container = document.getElementById('posts-container');
+        const countEl = document.getElementById('post-count');
+        
+        if (posts.length === 0) {
+          container.innerHTML = '<p>No posts yet. <a href="admin.html" class="quicklink">Create one!</a></p>';
+          return;
+        }
+
+        countEl.textContent = posts.length;
+        
+        container.innerHTML = posts.slice(0, 5).map(post => {
+          const date = new Date(post.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+          
+          return `
+            <article class="content">
+              <h2 class="post-title">${escapeHtml(post.title)}</h2>
+              <div class="post-meta">Posted on ${date}</div>
+              <p class="post-body">${escapeHtml(post.body.substring(0, 300))}${post.body.length > 300 ? '...' : ''}</p>
+              <a class="cta" href="post.html?id=${post.id}">
+                <span>Read more</span>
+                <span class="arrow">→</span>
+              </a>
+              ${post.status ? `
+              <section class="mini-post">
+                <div class="dot"></div>
+                <div>
+                  <strong class="post-mini-title">Currently</strong>
+                  <small class="post-mini-desc">${escapeHtml(post.status)}</small>
+                </div>
+              </section>
+              ` : ''}
+            </article>
+            ${posts.indexOf(post) < 4 ? '<hr style="border: 1px dashed #00cc55; margin: 20px 0;">' : ''}
+          `;
+        }).join('');
+        
+      } catch (error) {
+        document.getElementById('posts-container').innerHTML = 
+          '<p style="color: #ff6666;">Error loading posts. Make sure the server is running!</p>';
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadPosts();
+  </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+{
+  "name": "link-blog",
+  "version": "1.0.0",
+  "description": "A retro 2000s-style blog",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["blog", "retro", "2000s"],
+  "author": "Link",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
