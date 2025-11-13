@@ -12,8 +12,7 @@ app.use((req, res, next) => {
 	res.setHeader('X-Content-Type-Options', 'nosniff');
 	res.setHeader('X-Frame-Options', 'DENY');
 	res.setHeader('Referrer-Policy', 'no-referrer');
-	res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'");
-	res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+	res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data: https://encrypted-tbn0.gstatic.com; form-action 'self'"); res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 	next();
 });
 
@@ -97,8 +96,7 @@ function pageLayout(title, content, activeTab = '') {
   <div class="wrap">
     <header class="site-title">
       <div class="logo">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect fill='%23003322' width='64' height='64'/%3E%3Ctext x='32' y='40' font-size='32' text-anchor='middle' fill='%2300ff66'%3EL%3C/text%3E%3C/svg%3E" alt="Link">
-      </div>
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3cwh2_3_EMv7U1UjDGWCsKwWUQBrDSSvHyw&s" alt="Link">      </div>
       <div>
         <h1><a href="/" style="color: inherit; text-decoration: none;">Link</a></h1>
         <p class="lead">Because I was bored.</p>
@@ -230,8 +228,7 @@ app.post('/admin/login', (req, res) => {
 	if (hash === ADMIN_PASSWORD_HASH) {
 		const sessionId = generateSessionId();
 		sessions.set(sessionId, { createdAt: Date.now() });
-		res.setHeader('Set-Cookie', `session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600`);
-		res.redirect('/admin/dashboard');
+		res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data: https://encrypted-tbn0.gstatic.com; form-action 'self'"); res.redirect('/admin/dashboard');
 	} else {
 		res.send(`<!doctype html><html><head><meta charset="utf-8" /><meta http-equiv="refresh" content="2;url=/admin"><title>Login Failed</title><link rel="stylesheet" href="/styles/main.css"></head><body><div class="wrap"><div class="card" style="max-width: 500px; margin: 100px auto; text-align: center;"><div class="content-inner"><h2 style="color: #ff6666;">Invalid Password</h2><p>Redirecting...</p></div></div></div></body></html>`);
 	}
