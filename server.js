@@ -12,7 +12,8 @@ app.use((req, res, next) => {
 	res.setHeader('X-Content-Type-Options', 'nosniff');
 	res.setHeader('X-Frame-Options', 'DENY');
 	res.setHeader('Referrer-Policy', 'no-referrer');
-	res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data: https://encrypted-tbn0.gstatic.com; form-action 'self'"); res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+	res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data: https://encrypted-tbn0.gstatic.com; form-action 'self'");
+	res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 	next();
 });
 
@@ -23,6 +24,7 @@ app.use(express.static('.', { maxAge: 0, etag: false }));
 // Files
 const POSTS_FILE = path.join(__dirname, 'posts.json');
 const COMMENTS_FILE = path.join(__dirname, 'comments.json');
+const PROJECTS_FILE = path.join(__dirname, 'projects.json');
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH ||
 	crypto.createHash('sha256').update('changeme').digest('hex');
 
@@ -40,6 +42,34 @@ function isAuthenticated(req) {
 async function initFiles() {
 	try { await fs.access(POSTS_FILE); } catch { await fs.writeFile(POSTS_FILE, '[]'); }
 	try { await fs.access(COMMENTS_FILE); } catch { await fs.writeFile(COMMENTS_FILE, '[]'); }
+	try { await fs.access(PROJECTS_FILE); } catch { 
+		await fs.writeFile(PROJECTS_FILE, JSON.stringify([
+			{
+				id: 1,
+				title: "NaviChat",
+				description: "A Tor Based E2E Encrypted Messenger Made In GoLang.",
+				url: "http://navi5jbi3apijnyvp5ck6q4n656niqt4jrleiwb2eeaokonfxs22wiid.onion/",
+				status: "active",
+				order: 1
+			},
+			{
+				id: 2,
+				title: "Magolor",
+				description: "A Programming Language Designed To Make Games and Low Level Programming Easier.",
+				url: "",
+				status: "coming_soon",
+				order: 2
+			},
+			{
+				id: 3,
+				title: "Link",
+				description: "Literally This Site. A retro 2000s-style blog with dynamic posting.",
+				url: "/",
+				status: "active",
+				order: 3
+			}
+		], null, 2));
+	}
 }
 
 async function getPosts() {
@@ -56,6 +86,14 @@ async function getComments() {
 
 async function saveComments(comments) {
 	await fs.writeFile(COMMENTS_FILE, JSON.stringify(comments, null, 2));
+}
+
+async function getProjects() {
+	try { return JSON.parse(await fs.readFile(PROJECTS_FILE, 'utf8')); } catch { return []; }
+}
+
+async function saveProjects(projects) {
+	await fs.writeFile(PROJECTS_FILE, JSON.stringify(projects, null, 2));
 }
 
 function escapeHtml(text) {
@@ -96,7 +134,8 @@ function pageLayout(title, content, activeTab = '') {
   <div class="wrap">
     <header class="site-title">
       <div class="logo">
-<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3cwh2_3_EMv7U1UjDGWCsKwWUQBrDSSvHyw&s" alt="Link">      </div>
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3cwh2_3_EMv7U1UjDGWCsKwWUQBrDSSvHyw&s" alt="Link">
+      </div>
       <div>
         <h1><a href="/" style="color: inherit; text-decoration: none;">Link</a></h1>
         <p class="lead">Because I was bored.</p>
@@ -211,8 +250,33 @@ app.post('/post/:id/comment', async (req, res) => {
 });
 
 // Projects page
-app.get('/projects', (req, res) => {
-	const content = `<section class="project-grid"><div class="card project-card"><div class="titlebar"><div class="title">NaviChat</div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><p class="project-body">A Tor Based E2E Encrypted Messenger Made In GoLang.</p><a class="cta" href="http://navi5jbi3apijnyvp5ck6q4n656niqt4jrleiwb2eeaokonfxs22wiid.onion/"><span>Visit site</span><span class="arrow">→</span></a></div></div><div class="card project-card"><div class="titlebar"><div class="title">Magolor</div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><p class="project-body">A Programming Language Designed To Make Games and Low Level Programming Easier.</p><span class="cta" style="opacity: 0.5; cursor: default;"><span>Coming Soon</span><span class="arrow">→</span></span></div></div><div class="card project-card"><div class="titlebar"><div class="title">Link</div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><p class="project-body">Literally This Site. A retro 2000s-style blog with dynamic posting.</p><a class="cta" href="/"><span>Go Home</span><span class="arrow">→</span></a></div></div></section><aside class="meta" style="max-width: 600px; margin: 0 auto;"><div class="panel"><h3>About Projects</h3><small>Still mostly doing this for fun. Everything here was built between caffeine highs and sleep deprivation.</small></div></aside>`;
+app.get('/projects', async (req, res) => {
+	const projects = await getProjects();
+	const sortedProjects = projects.sort((a, b) => a.order - b.order);
+	
+	const projectsHtml = sortedProjects.map(project => {
+		const isComingSoon = project.status === 'coming_soon';
+		const linkContent = isComingSoon 
+			? `<span class="cta" style="opacity: 0.5; cursor: default;"><span>Coming Soon</span><span class="arrow">→</span></span>`
+			: `<a class="cta" href="${escapeHtml(project.url)}"><span>Visit site</span><span class="arrow">→</span></a>`;
+		
+		return `<div class="card project-card">
+			<div class="titlebar">
+				<div class="title">${escapeHtml(project.title)}</div>
+				<div class="window-controls">
+					<button class="min">–</button>
+					<button class="max">□</button>
+					<button class="close">×</button>
+				</div>
+			</div>
+			<div class="content-inner">
+				<p class="project-body">${escapeHtml(project.description)}</p>
+				${linkContent}
+			</div>
+		</div>`;
+	}).join('');
+	
+	const content = `<section class="project-grid">${projectsHtml}</section><aside class="meta" style="max-width: 600px; margin: 0 auto;"><div class="panel"><h3>About Projects</h3><small>Still mostly doing this for fun. Everything here was built between caffeine highs and sleep deprivation.</small></div></aside>`;
 	res.send(pageLayout('Projects', content, 'projects'));
 });
 
@@ -228,7 +292,8 @@ app.post('/admin/login', (req, res) => {
 	if (hash === ADMIN_PASSWORD_HASH) {
 		const sessionId = generateSessionId();
 		sessions.set(sessionId, { createdAt: Date.now() });
-		res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'self'; img-src 'self' data: https://encrypted-tbn0.gstatic.com; form-action 'self'"); res.redirect('/admin/dashboard');
+		res.setHeader('Set-Cookie', `session=${sessionId}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600`);
+		res.redirect('/admin/dashboard');
 	} else {
 		res.send(`<!doctype html><html><head><meta charset="utf-8" /><meta http-equiv="refresh" content="2;url=/admin"><title>Login Failed</title><link rel="stylesheet" href="/styles/main.css"></head><body><div class="wrap"><div class="card" style="max-width: 500px; margin: 100px auto; text-align: center;"><div class="content-inner"><h2 style="color: #ff6666;">Invalid Password</h2><p>Redirecting...</p></div></div></div></body></html>`);
 	}
@@ -238,6 +303,8 @@ app.get('/admin/dashboard', async (req, res) => {
 	if (!isAuthenticated(req)) return res.redirect('/admin');
 	const posts = await getPosts();
 	const comments = await getComments();
+	const projects = await getProjects();
+	
 	const postsHtml = posts.length === 0 ? '<li>No posts yet.</li>' : posts.slice().reverse().map(post => {
 		const postComments = comments.filter(c => c.postId === post.id);
 		return `<li><h3>${escapeHtml(post.title)}</h3><small style="color: #66cc88;">${formatDate(post.date)}</small><p style="margin: 8px 0; font-size: 0.9rem;">${escapeHtml(post.body.substring(0, 150))}${post.body.length > 150 ? '...' : ''}</p><div style="margin-top: 10px;"><a href="/post/${post.id}" class="btn" style="font-size: 0.8rem; padding: 5px 10px;">View (${post.views || 0} views, ${postComments.length} comments)</a><form method="POST" action="/admin/delete-post/${post.id}" style="display: inline;"><button type="submit" class="btn btn-delete" style="font-size: 0.8rem; padding: 5px 10px;">Delete Post</button></form></div></li>`;
@@ -248,61 +315,21 @@ app.get('/admin/dashboard', async (req, res) => {
 		return `<li><strong>${escapeHtml(comment.name)}</strong> on <a href="/post/${comment.postId}" class="quicklink">${escapeHtml(post?.title || 'Unknown')}</a><br><small style="color: #88ffaa;">${formatRelativeTime(comment.date)}</small><p style="margin: 5px 0;">${escapeHtml(comment.comment.substring(0, 100))}${comment.comment.length > 100 ? '...' : ''}</p><form method="POST" action="/admin/delete-comment/${comment.id}" style="display: inline;"><button type="submit" class="btn btn-delete" style="font-size: 0.7rem; padding: 3px 8px;">Delete</button></form></li>`;
 	}).join('');
 
-	const content = `<div class="layout"><div class="main-col"><div class="card"><div class="titlebar"><div class="title"><span>Create New Post</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/create"><div class="form-group"><label for="title">Post Title:</label><input type="text" id="title" name="title" required placeholder="Enter post title..." maxlength="200"></div><div class="form-group"><label for="body">Post Content:</label><textarea id="body" name="body" required placeholder="Write your post here..." maxlength="10000"></textarea></div><div class="form-group"><label for="status">Current Status (optional):</label><input type="text" id="status" name="status" placeholder="What are you working on?" maxlength="200"></div><button type="submit" class="btn">Create Post</button><button type="reset" class="btn" style="background: linear-gradient(180deg, #999 0%, #666 100%);">Clear</button></form></div></div><div class="card" style="margin-top: 20px;"><div class="titlebar"><div class="title"><span>All Posts</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><ul class="post-list">${postsHtml}</ul></div></div><div class="card" style="margin-top: 20px;"><div class="titlebar"><div class="title"><span>Recent Comments</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><ul class="post-list">${commentsHtml}</ul></div></div></div><div class="side-col"><aside class="meta"><div class="panel"><h3>Dashboard Stats</h3><small><strong>Total Posts:</strong> ${posts.length}<br><strong>Total Comments:</strong> ${comments.length}<br><strong>Total Views:</strong> ${posts.reduce((sum, p) => sum + (p.views || 0), 0)}</small></div><div class="panel"><h3>Quick links</h3><small><a href="/" class="quicklink">Home</a><br><a href="/projects" class="quicklink">Projects</a><br><a href="/admin/logout" class="quicklink">Logout</a></small></div></aside></div></div>`;
+	const projectsHtml = projects.sort((a, b) => a.order - b.order).map(project => {
+		return `<li><h3>${escapeHtml(project.title)}</h3><p style="margin: 5px 0; font-size: 0.9rem;">${escapeHtml(project.description)}</p><small style="color: #88ffaa;">Status: ${project.status === 'active' ? 'Active' : 'Coming Soon'} • Order: ${project.order}</small><div style="margin-top: 10px;"><a href="/admin/edit-project/${project.id}" class="btn" style="font-size: 0.8rem; padding: 5px 10px;">Edit</a><form method="POST" action="/admin/delete-project/${project.id}" style="display: inline;"><button type="submit" class="btn btn-delete" style="font-size: 0.8rem; padding: 5px 10px;">Delete</button></form></div></li>`;
+	}).join('');
+
+	const content = `<div class="layout"><div class="main-col"><div class="card"><div class="titlebar"><div class="title"><span>Create New Post</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/create"><div class="form-group"><label for="title">Post Title:</label><input type="text" id="title" name="title" required placeholder="Enter post title..." maxlength="200"></div><div class="form-group"><label for="body">Post Content:</label><textarea id="body" name="body" required placeholder="Write your post here..." maxlength="10000"></textarea></div><div class="form-group"><label for="status">Current Status (optional):</label><input type="text" id="status" name="status" placeholder="What are you working on?" maxlength="200"></div><button type="submit" class="btn">Create Post</button><button type="reset" class="btn" style="background: linear-gradient(180deg, #999 0%, #666 100%);">Clear</button></form></div></div><div class="card" style="margin-top: 20px;"><div class="titlebar"><div class="title"><span>All Posts</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><ul class="post-list">${postsHtml}</ul></div></div><div class="card" style="margin-top: 20px;"><div class="titlebar"><div class="title"><span>Recent Comments</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><ul class="post-list">${commentsHtml}</ul></div></div></div><div class="side-col"><aside class="meta"><div class="panel"><h3>Dashboard Stats</h3><small><strong>Total Posts:</strong> ${posts.length}<br><strong>Total Comments:</strong> ${comments.length}<br><strong>Total Views:</strong> ${posts.reduce((sum, p) => sum + (p.views || 0), 0)}<br><strong>Total Projects:</strong> ${projects.length}</small></div><div class="panel"><h3>Quick links</h3><small><a href="/" class="quicklink">Home</a><br><a href="/projects" class="quicklink">Projects</a><br><a href="/admin/projects" class="quicklink">Manage Projects</a><br><a href="/admin/logout" class="quicklink">Logout</a></small></div></aside></div></div>`;
 	res.send(pageLayout('Admin Panel', content));
 });
 
-app.post('/admin/create', async (req, res) => {
+// Admin Projects Management
+app.get('/admin/projects', async (req, res) => {
 	if (!isAuthenticated(req)) return res.redirect('/admin');
-	const posts = await getPosts();
-	const newPost = {
-		id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
-		title: req.body.title.substring(0, 200), body: req.body.body.substring(0, 10000),
-		date: new Date().toISOString(), status: req.body.status ? req.body.status.substring(0, 200) : '', views: 0
-	};
-	posts.push(newPost);
-	await savePosts(posts);
-	res.redirect('/admin/dashboard');
-});
+	const projects = await getProjects();
+	
+	const projectsHtml = projects.sort((a, b) => a.order - b.order).map(project => {
+		return `<li><h3>${escapeHtml(project.title)}</h3><p style="margin: 5px 0; font-size: 0.9rem;">${escapeHtml(project.description)}</p><small style="color: #88ffaa;">URL: ${escapeHtml(project.url || 'None')} • Status: ${project.status === 'active' ? 'Active' : 'Coming Soon'} • Order: ${project.order}</small><div style="margin-top: 10px;"><a href="/admin/edit-project/${project.id}" class="btn" style="font-size: 0.8rem; padding: 5px 10px;">Edit</a><form method="POST" action="/admin/delete-project/${project.id}" style="display: inline;"><button type="submit" class="btn btn-delete" style="font-size: 0.8rem; padding: 5px 10px;">Delete</button></form></div></li>`;
+	}).join('');
 
-app.post('/admin/delete-post/:id', async (req, res) => {
-	if (!isAuthenticated(req)) return res.redirect('/admin');
-	const posts = await getPosts();
-	const comments = await getComments();
-	const postId = parseInt(req.params.id);
-	await savePosts(posts.filter(p => p.id !== postId));
-	await saveComments(comments.filter(c => c.postId !== postId));
-	res.redirect('/admin/dashboard');
-});
-
-app.post('/admin/delete-comment/:id', async (req, res) => {
-	if (!isAuthenticated(req)) return res.redirect('/admin');
-	const comments = await getComments();
-	await saveComments(comments.filter(c => c.id !== parseInt(req.params.id)));
-	res.redirect('/admin/dashboard');
-});
-
-app.get('/admin/logout', (req, res) => {
-	const sessionId = req.headers.cookie?.match(/session=([^;]+)/)?.[1];
-	if (sessionId) sessions.delete(sessionId);
-	res.setHeader('Set-Cookie', 'session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
-	res.redirect('/');
-});
-
-// Clean up old sessions every hour
-setInterval(() => {
-	const now = Date.now();
-	for (const [sessionId, session] of sessions.entries()) {
-		if (now - session.createdAt > 3600000) sessions.delete(sessionId);
-	}
-}, 3600000);
-
-// Start server
-initFiles().then(() => {
-	app.listen(PORT, () => {
-		console.log(`Blog server running on http://localhost:${PORT}`);
-		console.log(`Visit http://localhost:${PORT} to view your blog`);
-		console.log(`Admin panel at http://localhost:${PORT}/admin`);
-		console.log(`Change ADMIN_PASSWORD_HASH environment variable!`);
-	});
-});
+	const content = `<div class="layout"><div class="main-col"><div class="card"><div class="titlebar"><div class="title"><span>Create New Project</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/create-project"><div class="form-group"><label for="title">Project Title:</label><input type="text" id="title" name="title" required placeholder="Enter project name..." maxlength="100"></div><div class="form-group"><label for="description">Description:</label><textarea id="description" name="description" required placeholder="Describe your project..." maxlength="500" rows="4"></textarea></div><div class="form-group"><label
