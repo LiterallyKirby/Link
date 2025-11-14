@@ -332,4 +332,114 @@ app.get('/admin/projects', async (req, res) => {
 		return `<li><h3>${escapeHtml(project.title)}</h3><p style="margin: 5px 0; font-size: 0.9rem;">${escapeHtml(project.description)}</p><small style="color: #88ffaa;">URL: ${escapeHtml(project.url || 'None')} • Status: ${project.status === 'active' ? 'Active' : 'Coming Soon'} • Order: ${project.order}</small><div style="margin-top: 10px;"><a href="/admin/edit-project/${project.id}" class="btn" style="font-size: 0.8rem; padding: 5px 10px;">Edit</a><form method="POST" action="/admin/delete-project/${project.id}" style="display: inline;"><button type="submit" class="btn btn-delete" style="font-size: 0.8rem; padding: 5px 10px;">Delete</button></form></div></li>`;
 	}).join('');
 
-	const content = `<div class="layout"><div class="main-col"><div class="card"><div class="titlebar"><div class="title"><span>Create New Project</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/create-project"><div class="form-group"><label for="title">Project Title:</label><input type="text" id="title" name="title" required placeholder="Enter project name..." maxlength="100"></div><div class="form-group"><label for="description">Description:</label><textarea id="description" name="description" required placeholder="Describe your project..." maxlength="500" rows="4"></textarea></div><div class="form-group"><label
+	const content = `<div class="layout"><div class="main-col"><div class="card"><div class="titlebar"><div class="title"><span>Create New Project</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/create-project"><div class="form-group"><label for="title">Project Title:</label><input type="text" id="title" name="title" required placeholder="Enter project name..." maxlength="100"></div><div class="form-group"><label for="description">Description:</label><textarea id="description" name="description" required placeholder="Describe your project..." maxlength="500" rows="4"></textarea></div><div class="form-group"><label for="url">Project URL:</label><input type="text" id="url" name="url" placeholder="https://example.com or leave empty for coming soon" maxlength="200"></div><div class="form-group"><label for="status">Status:</label><select id="status" name="status" required><option value="active">Active</option><option value="coming_soon">Coming Soon</option></select></div><div class="form-group"><label for="order">Display Order:</label><input type="number" id="order" name="order" required placeholder="1, 2, 3..." min="1" value="${projects.length + 1}"></div><button type="submit" class="btn">Create Project</button><button type="reset" class="btn" style="background: linear-gradient(180deg, #999 0%, #666 100%);">Clear</button></form></div></div><div class="card" style="margin-top: 20px;"><div class="titlebar"><div class="title"><span>All Projects</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><ul class="post-list">${projectsHtml}</ul></div></div></div><div class="side-col"><aside class="meta"><div class="panel"><h3>Quick Links</h3><small><a href="/admin/dashboard" class="quicklink">← Back to Dashboard</a><br><a href="/projects" class="quicklink">View Projects Page</a><br><a href="/admin/logout" class="quicklink">Logout</a></small></div></aside></div></div>`;
+	res.send(pageLayout('Manage Projects', content));
+});
+
+// Create project
+app.post('/admin/create-project', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const projects = await getProjects();
+	const { title, description, url, status, order } = req.body;
+	const newProject = {
+		id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
+		title: title.substring(0, 100),
+		description: description.substring(0, 500),
+		url: url.substring(0, 200),
+		status: status,
+		order: parseInt(order) || projects.length + 1
+	};
+	projects.push(newProject);
+	await saveProjects(projects);
+	res.redirect('/admin/projects');
+});
+
+// Edit project page
+app.get('/admin/edit-project/:id', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const projects = await getProjects();
+	const project = projects.find(p => p.id === parseInt(req.params.id));
+	if (!project) return res.status(404).send('Project not found');
+	
+	const content = `<div class="card" style="max-width: 600px; margin: 0 auto;"><div class="titlebar"><div class="title"><span>Edit Project</span></div><div class="window-controls"><button class="min">–</button><button class="max">□</button><button class="close">×</button></div></div><div class="content-inner"><form method="POST" action="/admin/update-project/${project.id}"><div class="form-group"><label for="title">Project Title:</label><input type="text" id="title" name="title" required value="${escapeHtml(project.title)}" maxlength="100"></div><div class="form-group"><label for="description">Description:</label><textarea id="description" name="description" required maxlength="500" rows="4">${escapeHtml(project.description)}</textarea></div><div class="form-group"><label for="url">Project URL:</label><input type="text" id="url" name="url" value="${escapeHtml(project.url)}" maxlength="200"></div><div class="form-group"><label for="status">Status:</label><select id="status" name="status" required><option value="active" ${project.status === 'active' ? 'selected' : ''}>Active</option><option value="coming_soon" ${project.status === 'coming_soon' ? 'selected' : ''}>Coming Soon</option></select></div><div class="form-group"><label for="order">Display Order:</label><input type="number" id="order" name="order" required value="${project.order}" min="1"></div><button type="submit" class="btn">Update Project</button><a href="/admin/projects" class="btn" style="background: linear-gradient(180deg, #999 0%, #666 100%); text-decoration: none;">Cancel</a></form></div></div>`;
+	res.send(pageLayout('Edit Project', content));
+});
+
+// Update project
+app.post('/admin/update-project/:id', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const projects = await getProjects();
+	const project = projects.find(p => p.id === parseInt(req.params.id));
+	if (!project) return res.status(404).send('Project not found');
+	
+	const { title, description, url, status, order } = req.body;
+	project.title = title.substring(0, 100);
+	project.description = description.substring(0, 500);
+	project.url = url.substring(0, 200);
+	project.status = status;
+	project.order = parseInt(order) || project.order;
+	
+	await saveProjects(projects);
+	res.redirect('/admin/projects');
+});
+
+// Delete project
+app.post('/admin/delete-project/:id', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const projects = await getProjects();
+	const filtered = projects.filter(p => p.id !== parseInt(req.params.id));
+	await saveProjects(filtered);
+	res.redirect('/admin/projects');
+});
+
+// Create post
+app.post('/admin/create', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const posts = await getPosts();
+	const { title, body, status } = req.body;
+	const newPost = {
+		id: posts.length > 0 ? Math.max(...posts.map(p => p.id)) + 1 : 1,
+		title: title.substring(0, 200),
+		body: body.substring(0, 10000),
+		date: new Date().toISOString(),
+		status: status ? status.substring(0, 200) : '',
+		views: 0
+	};
+	posts.push(newPost);
+	await savePosts(posts);
+	res.redirect('/admin/dashboard');
+});
+
+// Delete post
+app.post('/admin/delete-post/:id', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const posts = await getPosts();
+	const comments = await getComments();
+	const filtered = posts.filter(p => p.id !== parseInt(req.params.id));
+	const filteredComments = comments.filter(c => c.postId !== parseInt(req.params.id));
+	await savePosts(filtered);
+	await saveComments(filteredComments);
+	res.redirect('/admin/dashboard');
+});
+
+// Delete comment
+app.post('/admin/delete-comment/:id', async (req, res) => {
+	if (!isAuthenticated(req)) return res.redirect('/admin');
+	const comments = await getComments();
+	const filtered = comments.filter(c => c.id !== parseInt(req.params.id));
+	await saveComments(filtered);
+	res.redirect('/admin/dashboard');
+});
+
+// Logout
+app.get('/admin/logout', (req, res) => {
+	const sessionId = req.headers.cookie?.match(/session=([^;]+)/)?.[1];
+	if (sessionId) sessions.delete(sessionId);
+	res.setHeader('Set-Cookie', 'session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
+	res.redirect('/');
+});
+
+// Initialize and start
+initFiles().then(() => {
+	app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+});
